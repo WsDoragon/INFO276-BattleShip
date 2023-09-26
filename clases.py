@@ -18,7 +18,6 @@ class Barco:
     def hundir(self):
         pass
 
-
 class Tablero:
     def __init__(self, tamaño):
         self.tamaño = tamaño
@@ -36,15 +35,6 @@ class Tablero:
     def barcosVivos(self):
         pass
 
-'''
-Clase: Servidor
-Atributos:
-- jugadoresConectados: Lista de Jugadores
-Métodos:
-- iniciarPartida(): void
-- finalizarPartida(): void
-'''
-
 class Servidor:
     def __init__(self):
         self.jugadoresConectados = []
@@ -55,26 +45,28 @@ class Servidor:
     def finalizarPartida(self):
         pass
 
-'''
-Clase: Cliente
-Atributos:
-- nombre: String
-- servidor: Servidor
-Métodos:
-- conectarAServidor(servidor: Servidor): void
-- desconectar(): void
-- jugarTurno(): void
-'''
-
 class Cliente:
     def __init__(self, nombre):
         self.nombre = nombre
         self.servidor = None
 
-    def conectarAServidor(self, servidor):
+    def conectarAServidor(self, servidor, port):
         self.servidor = servidor
+        self.port = port
+
+        self.socket = socket.socket(family=socket.AF_INET, type=socket.SOCK_DGRAM)
+        self.socket.bind((self.servidor, self.port))
+        #mensaje de conexion
+        self.socket.sendto("conexion".encode(), (self.servidor, self.port))
+
+
+    def conectarASala(self, sala):
+        pass
 
     def desconectar(self):
+        #mensaje de desconexion
+        self.socket.sendto("desconexion".encode(), (self.servidor, self.port))
+        self.socket.close()
         pass
 
     def jugarTurno(self):
