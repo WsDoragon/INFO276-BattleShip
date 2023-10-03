@@ -1,0 +1,40 @@
+{
+    "accion": ["conectar", "atacar", "otro"],
+    "type": ["p", "b", "s"],
+    "posicion": {
+        "x": 0,
+        "y": 0
+    },
+    "dir": ["Vertical (1)", "Horizontal (0)"]
+}
+
+--> inicio turno
+{
+    "accion": "inicio",
+    "type": "p",
+    "posicion": "x,y",
+    "dir": "0 | 1"
+}
+
+{
+    "accion": "atacar",
+    "posicion": "x,y",
+} -->
+
+{
+    "accion": "atacar",
+    "confirmacion": "0 (no) | 1 (si)"
+}
+
+
+user 1 = [[0,0,0,0,0,0,0,0,0,0,1,0]
+
+
+
+]
+
+user2.barcos = {
+    p = [{x:0,y:0},{x:0,y:1},{x:0,y:2},{x:0,y:3}],
+    b = [{x:0,y:0},{x:0,y:1},{x:0,y:2}],
+    s = [{x:0,y:0},{x:0,y:1}],
+}
