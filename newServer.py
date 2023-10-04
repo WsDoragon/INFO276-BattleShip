@@ -11,9 +11,8 @@ serverJSON = {
     "position" : [0,0]
 }
 
-
 localIP = "127.0.0.1"
-localPort = 20001
+localPort = 21000
 bufferSize = 1024
 msgFromServer = "Hello UDP Client"
 bytesToSend = str.encode(msgFromServer)
@@ -37,7 +36,7 @@ while(True):
     print(clientIP)
 
     #Handle conexion de un usuario
-    if (jsonMessage["action"] == 'conexion' and servidor.jugadoresConectados.count(address) == 0):
+    if (jsonMessage["action"] == 'conexion' and servidor.jugadoresConectados.count(address) == 0 and len(servidor.jugadoresConectados) < 2):
         msgFromServer = "Conexion exitosa"
         serverJSON["action"] = "conexion"
         serverJSON["status"] = 1
@@ -49,7 +48,32 @@ while(True):
 
         continue
 
-    if (jsonMessage["action"] == "start"):
+    elif(jsonMessage["action"] == 'conexion' and servidor.jugadoresConectados.count(address) > 0 and len(servidor.jugadoresConectados) >= 2):
+        msgFromServer = "Conexion fallida"
+        serverJSON["action"] = "conexion"
+        serverJSON["status"] = 0
+        serverJSONsend = json.dumps(serverJSON)
+        UDPServerSocket.sendto(serverJSONsend.encode(), address)
+        continue
+
+    if jsonMessage["action"] == "start" and len(servidor.jugadoresConectados) == 2:
+        msgFromServer = "Partida iniciada"
+        serverJSON["action"] = "start"
+        serverJSON["status"] = 1
+        serverJSONsend = json.dumps(serverJSON).encode()
+        for jugador in servidor.jugadoresConectados:
+            #print(serverJSON)
+            UDPServerSocket.sendto(serverJSONsend, jugador)
+            print("sending to: ",jugador)
+
+    elif(jsonMessage["action"] == "start" and len(servidor.jugadoresConectados) < 2):
+        msgFromServer = "Partida no iniciada"
+        serverJSON["action"] = "start"
+        serverJSON["status"] = 0
+        serverJSONsend = json.dumps(serverJSON)
+
+
+        UDPServerSocket.sendto(serverJSONsend.encode(), address)
         continue
 
     #Handle desconexion de un usuario
@@ -61,5 +85,15 @@ while(True):
         break
         continue
 
-    # Sending a reply to client
-    UDPServerSocket.sendto(bytesToSend, address)
+    if jsonMessage["action"] == 'a':
+        msgFromServer = "Desconexion exitosa"
+        servidor.jugadoresConectados.remove(address)
+        print(servidor.jugadoresConectados)
+        serverJSON["action"] = "desconectar"
+        serverJSON["status"] = 1
+        serverJSONsend = json.dumps(serverJSON)
+
+        UDPServerSocket.sendto(serverJSONsend.encode(), address)
+        break
+        continue
+    
