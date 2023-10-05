@@ -11,6 +11,8 @@ serverJSON = {
     "position" : [0,0]
 }
 
+ships = [["p",1], ["b",2], ["s",3]]
+
 localIP = "127.0.0.1"
 localPort = 21000
 bufferSize = 1024
