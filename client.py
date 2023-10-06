@@ -48,8 +48,9 @@ def client_terminal():
     receive_thread = threading.Thread(target=receive_messages, args=(sock,))
     receive_thread.start()
 
-    user_ships, userBoard = build_game(5)
-    print(user_ships)
+    #Creacion tablero usuario
+    #user_ships, userBoard = build_game(5)
+    #print(user_ships)
 
     input("Presione ENTER para conectarse al servidor...")
     myJSON = {
@@ -64,7 +65,13 @@ def client_terminal():
                 msg = input("-> ")
                 msg = msg.split(" - ")
 
-                if msg[0] == "start" and len(msg) == 2:
+                if msg[0] == "build":
+                    myJSON = {
+                        "action": msg[0],
+                        "ships": {'p': [0, 0, True], 'b': [0, 3, True], 's': [1, 2, True]}
+                    }
+
+                elif msg[0] == "start" and len(msg) == 2:
                     myJSON = {
                         "action": msg[0],
                         "bot": msg[1]
@@ -99,17 +106,21 @@ def client_terminal():
             while gameInit:
                 print("Esperando turno...")
                 msg = input("ataque(x,y) -> ")
+                while len(msg) != 3:
+                    msg = input("ataque(x,y) -> ")
+                msgSplit = msg.split(",")
                 myJSON = {
-                    "action": msg
+                    "action": "attack",
+                    "position": [int(msgSplit[0]), int(msgSplit[1])]
                 }
                 myJSON = json.dumps(myJSON)
                 sock.send(myJSON.encode())
-                data = sock.recv(1024).decode()
-                receivedJSON = json.loads(data)
-                print("Received from server: ", receivedJSON)
+                #data = sock.recv(1024).decode()
+                #receivedJSON = json.loads(data)
+                #print("Received from server: ", receivedJSON)
 
-                if receivedJSON["action"] == "desconectar":
-                    break
+                #if receivedJSON["action"] == "desconectar":
+                #    break
 
 if __name__ == '__main__':
     client_terminal()

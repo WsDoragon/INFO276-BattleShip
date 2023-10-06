@@ -11,7 +11,18 @@ serverJSON = {
     "position" : [0,0]
 }
 
-ships = [["p",1], ["b",2], ["s",3]]
+acciones = {
+    "c" : "connect",
+    "s" : "start",
+    "a" : "attack",
+    "d" : "desconectar",
+    "b" : "build",
+    "d" : "disconnect",
+    "l" : "lost"
+
+}
+
+shipTypes = ["p","b","s"]
 
 localIP = "127.0.0.1"
 localPort = 21000
@@ -38,11 +49,13 @@ while(True):
     print(clientIP)
 
     #Handle conexion de un usuario
-    if (jsonMessage["action"] == 'conexion' and servidor.jugadoresConectados.count(address) == 0 and len(servidor.jugadoresConectados) < 2):
+    if (jsonMessage["action"] == 'conexion' and address not in servidor.jugadoresConectados and len(servidor.jugadoresConectados) < 2):
         msgFromServer = "Conexion exitosa"
         serverJSON["action"] = "conexion"
         serverJSON["status"] = 1
-        servidor.jugadoresConectados.append(address)
+        player = clases.Jugador(address)
+        servidor.jugadoresConectados[address] = player
+        #servidor.jugadoresConectados.append(address)
         print(servidor.jugadoresConectados)
 
         serverJSONsend = json.dumps(serverJSON)
@@ -50,10 +63,25 @@ while(True):
 
         continue
 
-    elif(jsonMessage["action"] == 'conexion' and servidor.jugadoresConectados.count(address) > 0 and len(servidor.jugadoresConectados) >= 2):
+    elif(jsonMessage["action"] == 'conexion' and address not in servidor.jugadoresConectados  and len(servidor.jugadoresConectados) >= 2):
         msgFromServer = "Conexion fallida"
         serverJSON["action"] = "conexion"
         serverJSON["status"] = 0
+        serverJSONsend = json.dumps(serverJSON)
+        UDPServerSocket.sendto(serverJSONsend.encode(), address)
+        continue
+
+    if jsonMessage["action"] == 'build':
+        msgFromServer = "Tablero construido"
+        serverJSON["action"] = "build"
+        serverJSON["status"] = 1
+        naves = jsonMessage["ships"]
+        mis_naves = clases.Barcos(naves)
+        servidor.jugadoresConectados[address].añadirBarco(mis_naves)
+        print(servidor.jugadoresConectados[address].obtenerBarcos())
+        #for nave in shipTypes:
+        #    print(naves[nave])
+            #sendShips = clases.Barcos(naves)
         serverJSONsend = json.dumps(serverJSON)
         UDPServerSocket.sendto(serverJSONsend.encode(), address)
         continue
@@ -64,9 +92,14 @@ while(True):
         serverJSON["status"] = 1
         serverJSONsend = json.dumps(serverJSON).encode()
         for jugador in servidor.jugadoresConectados:
-            #print(serverJSON)
+
+            if jugador != address:
+                servidor.jugadoresConectados[jugador].asignarOponente(servidor.jugadoresConectados[address].address)
+                servidor.jugadoresConectados[address].asignarOponente(servidor.jugadoresConectados[jugador].address)
+                
             UDPServerSocket.sendto(serverJSONsend, jugador)
             print("sending to: ",jugador)
+           #print (servidor.jugadoresConectados[jugador].opponent)
 
     elif(jsonMessage["action"] == "start" and len(servidor.jugadoresConectados) < 2):
         msgFromServer = "Partida no iniciada"
@@ -77,6 +110,46 @@ while(True):
 
         UDPServerSocket.sendto(serverJSONsend.encode(), address)
         continue
+
+    if jsonMessage["action"] == 'attack':
+        msgFromServer = "Ataque realizado"
+        serverJSON["action"] = "attack"
+        serverJSON["status"] = 1
+        serverJSON["position"] = jsonMessage["position"]
+
+        logro = servidor.jugadoresConectados[address].ships.recibirAtaque(jsonMessage["position"])
+
+        if logro:
+            print("Le diste a un barco")
+            if servidor.jugadoresConectados[address].ships.casillas == []:
+                print("Ganaste")
+                serverJSON["action"] = "win"
+                serverJSON["status"] = 1
+                serverJSONsend = json.dumps(serverJSON)
+                UDPServerSocket.sendto(serverJSONsend.encode(), address)
+                #Falta cambiar que le llegue un 0 al otro jugador cuando pierde
+                UDPServerSocket.sendto(serverJSONsend.encode(), servidor.jugadoresConectados[address].opponent)
+                break
+            else:
+                serverJSON["action"] = "attack"
+                serverJSON["status"] = 1
+                serverJSONsend = json.dumps(serverJSON)
+                UDPServerSocket.sendto(serverJSONsend.encode(), address)
+                UDPServerSocket.sendto(serverJSONsend.encode(), servidor.jugadoresConectados[address].opponent)
+                
+        else:
+            print("Fallaste")
+            serverJSON["action"] = "attack"
+            serverJSON["status"] = 0
+            serverJSONsend = json.dumps(serverJSON)
+            UDPServerSocket.sendto(serverJSONsend.encode(), address)
+            UDPServerSocket.sendto(serverJSONsend.encode(), servidor.jugadoresConectados[address].opponent)
+        
+        
+
+        """serverJSONsend = json.dumps(serverJSON)
+        UDPServerSocket.sendto(serverJSONsend.encode(), address)
+        continue"""
 
     #Handle desconexion de un usuario
     if jsonMessage["action"] == 'desconexion':
