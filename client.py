@@ -106,6 +106,8 @@ def client_terminal():
             while gameInit:
                 print("Esperando turno...")
                 msg = input("ataque(x,y) -> ")
+                if msg == "exit":
+                    exit()
                 while len(msg) != 3:
                     msg = input("ataque(x,y) -> ")
                 msgSplit = msg.split(",")

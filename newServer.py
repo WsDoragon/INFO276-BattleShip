@@ -117,17 +117,21 @@ while(True):
         serverJSON["status"] = 1
         serverJSON["position"] = jsonMessage["position"]
 
-        logro = servidor.jugadoresConectados[address].ships.recibirAtaque(jsonMessage["position"])
+        address_opponent = servidor.jugadoresConectados[address].opponent
+        logro = servidor.jugadoresConectados[address_opponent].ships.recibirAtaque(jsonMessage["position"])
 
         if logro:
             print("Le diste a un barco")
-            if servidor.jugadoresConectados[address].ships.casillas == []:
+            if servidor.jugadoresConectados[address_opponent].ships.casillas == []:
                 print("Ganaste")
-                serverJSON["action"] = "win"
-                serverJSON["status"] = 1
+                serverJSON["action"] = "lost" #lost
+                serverJSON["status"] = 0
                 serverJSONsend = json.dumps(serverJSON)
                 UDPServerSocket.sendto(serverJSONsend.encode(), address)
                 #Falta cambiar que le llegue un 0 al otro jugador cuando pierde
+                serverJSON["action"] = "lost"
+                serverJSON["status"] = 1
+                serverJSONsend = json.dumps(serverJSON)
                 UDPServerSocket.sendto(serverJSONsend.encode(), servidor.jugadoresConectados[address].opponent)
                 break
             else:
