@@ -54,14 +54,14 @@ def client_terminal():
     }
 
     message = json.dumps(JsonUSer).encode()
-    sock.sendto(message, server_address)
+    #sock.sendto(message, server_address)
 
     # Configurar el timeout en 1 segundo
     sock.settimeout(10)
 
     # Enviar un mensaje al servidor
     try:
-        sent = sock.sendto(message, server_address)
+        sock.sendto(message, server_address)
 
         # Esperar la respuesta del servidor
         data, server = sock.recv(1024)
@@ -69,7 +69,7 @@ def client_terminal():
     except socket.timeout:
         # Si se produce un timeout, reintentar el envío del mensaje
         print('Timeout, reintentando...')
-        sent = sock.sendto(message, server_address)
+        sock.sendto(message, server_address)
 
     
     #Envio barcos
@@ -92,7 +92,7 @@ def client_terminal():
         data, address = sock.recvfrom(1024)
         receivedJSONTurn = json.loads(data.decode())
         print(receivedJSONTurn)
-        if(receivedJSONTurn["status"] == 1):
+        if(receivedJSONTurn["action"] == "t" and receivedJSONTurn["status"] == 1):
             #Envio ataque
             attackEntry = input("Ingrese comando 'attack - [x,y]': ").split("-")
             JsonUSer = {
@@ -119,13 +119,15 @@ def client_terminal():
 
             elif(receivedJSON["action"] == "a" and receivedJSON["status"] == 1):
                 print("Ataque exitoso")
+                #logica de ataques acertados
                 continue
             else:
                 print("Ataque fallido")
+                #logica de ataques fallados
                 continue
 
         else:
-            print("Esperando turno...")
+            print("Esperando turno enemigo...")
             #recibir confirmacion ataque enemigo
             data, address = sock.recvfrom(1024)
             receivedJSON = json.loads(data.decode())
