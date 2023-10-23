@@ -49,7 +49,7 @@ while(True):
     print(clientIP)
 
     #Handle conexion de un usuario
-    if (jsonMessage["action"] == 'conexion' and address not in servidor.jugadoresConectados and len(servidor.jugadoresConectados) < 2):
+    if (jsonMessage["action"] == 'c' and address not in servidor.jugadoresConectados and len(servidor.jugadoresConectados) < 2):
         msgFromServer = "Conexion exitosa"
         serverJSON["action"] = "conexion"
         serverJSON["status"] = 1
@@ -63,7 +63,7 @@ while(True):
 
         continue
 
-    elif(jsonMessage["action"] == 'conexion' and address not in servidor.jugadoresConectados  and len(servidor.jugadoresConectados) >= 2):
+    elif(jsonMessage["action"] == 'c' and address not in servidor.jugadoresConectados  and len(servidor.jugadoresConectados) >= 2):
         msgFromServer = "Conexion fallida"
         serverJSON["action"] = "conexion"
         serverJSON["status"] = 0
@@ -71,7 +71,8 @@ while(True):
         UDPServerSocket.sendto(serverJSONsend.encode(), address)
         continue
 
-    if jsonMessage["action"] == 'build':
+    #Build de tablero
+    if jsonMessage["action"] == 'b':
         msgFromServer = "Tablero construido"
         serverJSON["action"] = "build"
         serverJSON["status"] = 1
@@ -84,9 +85,12 @@ while(True):
             #sendShips = clases.Barcos(naves)
         serverJSONsend = json.dumps(serverJSON)
         UDPServerSocket.sendto(serverJSONsend.encode(), address)
+
+        
         continue
 
-    if jsonMessage["action"] == "start" and len(servidor.jugadoresConectados) == 2:
+        #Start de partida
+    if jsonMessage["action"] == "s" and len(servidor.jugadoresConectados) == 2:
         msgFromServer = "Partida iniciada"
         serverJSON["action"] = "start"
         serverJSON["status"] = 1
@@ -94,6 +98,7 @@ while(True):
         for jugador in servidor.jugadoresConectados:
 
             if jugador != address:
+
                 servidor.jugadoresConectados[jugador].asignarOponente(servidor.jugadoresConectados[address].address)
                 servidor.jugadoresConectados[address].asignarOponente(servidor.jugadoresConectados[jugador].address)
                 
@@ -101,7 +106,7 @@ while(True):
             print("sending to: ",jugador)
            #print (servidor.jugadoresConectados[jugador].opponent)
 
-    elif(jsonMessage["action"] == "start" and len(servidor.jugadoresConectados) < 2):
+    elif(jsonMessage["action"] == "s" and len(servidor.jugadoresConectados) < 2):
         msgFromServer = "Partida no iniciada"
         serverJSON["action"] = "start"
         serverJSON["status"] = 0
@@ -111,7 +116,8 @@ while(True):
         UDPServerSocket.sendto(serverJSONsend.encode(), address)
         continue
 
-    if jsonMessage["action"] == 'attack':
+        #Ataque de un usuario
+    if jsonMessage["action"] == 'a':
         msgFromServer = "Ataque realizado"
         serverJSON["action"] = "attack"
         serverJSON["status"] = 1
@@ -124,18 +130,18 @@ while(True):
             print("Le diste a un barco")
             if servidor.jugadoresConectados[address_opponent].ships.casillas == []:
                 print("Ganaste")
-                serverJSON["action"] = "lost" #lost
+                serverJSON["action"] = "l" #lost
                 serverJSON["status"] = 0
                 serverJSONsend = json.dumps(serverJSON)
                 UDPServerSocket.sendto(serverJSONsend.encode(), address)
                 #Falta cambiar que le llegue un 0 al otro jugador cuando pierde
-                serverJSON["action"] = "lost"
+                serverJSON["action"] = "l"
                 serverJSON["status"] = 1
                 serverJSONsend = json.dumps(serverJSON)
                 UDPServerSocket.sendto(serverJSONsend.encode(), servidor.jugadoresConectados[address].opponent)
                 break
             else:
-                serverJSON["action"] = "attack"
+                serverJSON["action"] = "a"
                 serverJSON["status"] = 1
                 serverJSONsend = json.dumps(serverJSON)
                 UDPServerSocket.sendto(serverJSONsend.encode(), address)
@@ -143,7 +149,7 @@ while(True):
                 
         else:
             print("Fallaste")
-            serverJSON["action"] = "attack"
+            serverJSON["action"] = "a"
             serverJSON["status"] = 0
             serverJSONsend = json.dumps(serverJSON)
             UDPServerSocket.sendto(serverJSONsend.encode(), address)
@@ -156,11 +162,11 @@ while(True):
         continue"""
 
     #Handle desconexion de un usuario
-    if jsonMessage["action"] == 'desconexion':
+    if jsonMessage["action"] == 'd':
         msgFromServer = "Desconexion exitosa"
         servidor.jugadoresConectados.remove(address)
         #Como eliminar un elemento de un diccionario
-        #del servidor.jugadoresConectados[address]
+        del servidor.jugadoresConectados[address]
         
         print(servidor.jugadoresConectados)
         UDPServerSocket.sendto(msgFromServer.encode(), address)

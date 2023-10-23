@@ -103,36 +103,52 @@ def client_terminal():
         if(receivedJSONTurn["action"] == "t" and receivedJSONTurn["status"] == 1):
             #Envio ataque
             attackEntry = input("Ingrese posicion de ataque 'x - y': ").split("-")
-            JsonUSer = {
-                "action": "a",
-                "position": [int(attackEntry[0]), int(attackEntry[1])]
-            }
 
-            message = json.dumps(JsonUSer).encode()
-            sock.send(message)
-
-            #Recepcion de ataque
-            data, address = sock.recvfrom(1024)
-            receivedJSON = json.loads(data.decode())
-            print(receivedJSON)
-
-            if(receivedJSON["action"] == "l" and receivedJSON["status"] == 1):
-                print("Perdiste")
-                gaming = False
-                continue
-            elif(receivedJSON["action"] == "l" and receivedJSON["status"] == 0):
-                print("Ganaste")
-                gaming = False
-                continue
-
-            elif(receivedJSON["action"] == "a" and receivedJSON["status"] == 1):
-                print("Ataque exitoso")
-                #logica de ataques acertados
-                continue
+            if(attackEntry[0] == "exit" or attackEntry[1] == "exit"):
+                print("Cerrando programa...")
+                jsonUser = {
+                    "action": "d"
+                }
+                message = json.dumps(jsonUser).encode()
+                sock.send(message)
+                data, address = sock.recvfrom(1024)
+                receivedJSON = json.loads(data.decode())
+                if (receivedJSON["action"] == "d" and receivedJSON["status"] == 1):
+                    print("Desconexion exitosa")
+                    sock.close()
+                    exit()
+                    
             else:
-                print("Ataque fallido")
-                #logica de ataques fallados
-                continue
+                JsonUSer = {
+                    "action": "a",
+                    "position": [int(attackEntry[0]), int(attackEntry[1])]
+                }
+
+                message = json.dumps(JsonUSer).encode()
+                sock.send(message)
+
+                #Recepcion de ataque
+                data, address = sock.recvfrom(1024)
+                receivedJSON = json.loads(data.decode())
+                print(receivedJSON)
+
+                if(receivedJSON["action"] == "l" and receivedJSON["status"] == 1):
+                    print("Perdiste")
+                    gaming = False
+                    continue
+                elif(receivedJSON["action"] == "l" and receivedJSON["status"] == 0):
+                    print("Ganaste")
+                    gaming = False
+                    continue
+
+                elif(receivedJSON["action"] == "a" and receivedJSON["status"] == 1):
+                    print("Ataque exitoso")
+                    #logica de ataques acertados
+                    continue
+                else:
+                    print("Ataque fallido")
+                    #logica de ataques fallados
+                    continue
 
         else:
             print("Esperando turno enemigo...")
