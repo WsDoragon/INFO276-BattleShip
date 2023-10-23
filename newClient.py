@@ -1,6 +1,8 @@
 import socket
 import json
 
+import board
+
 jsonUser = {
     "action": "",
 }
@@ -13,6 +15,11 @@ def client_terminal():
 
     # define the server address and port
     server_address = ('localhost', 20001)
+    sock.connect(server_address)
+
+    #creacion de tablero
+    #user_ships, userBoard = board.build_game(5)
+    #print(user_ships)
 
     # send a message to the server
     JsonUSer = {
@@ -22,7 +29,7 @@ def client_terminal():
     continues = True
     while (continues == True):
         message = json.dumps(JsonUSer).encode()
-        sock.sendto(message, server_address)
+        sock.send(message)
 
         # receive a response from the server
         data, address = sock.recv(1024)
@@ -54,14 +61,14 @@ def client_terminal():
     }
 
     message = json.dumps(JsonUSer).encode()
-    #sock.sendto(message, server_address)
+    #sock.send(message)
 
     # Configurar el timeout en 1 segundo
     sock.settimeout(10)
 
     # Enviar un mensaje al servidor
     try:
-        sock.sendto(message, server_address)
+        sock.send(message)
 
         # Esperar la respuesta del servidor
         data, server = sock.recv(1024)
@@ -69,7 +76,7 @@ def client_terminal():
     except socket.timeout:
         # Si se produce un timeout, reintentar el envío del mensaje
         print('Timeout, reintentando...')
-        sock.sendto(message, server_address)
+        sock.send(message)
 
     
     #Envio barcos
@@ -79,7 +86,7 @@ def client_terminal():
     }
 
     message = json.dumps(JsonUSer).encode()
-    sock.sendto(message, server_address)
+    sock.send(message)
 
     # receive a response from the server
     data, address = sock.recvfrom(1024)
@@ -87,6 +94,7 @@ def client_terminal():
     print("Datos validados de build\n",receivedJSON, "\n")
 
     gaming = True
+    enemyBoard = board.build_board(5)
     while (gaming):
         #Recepcion turno
         data, address = sock.recvfrom(1024)
@@ -94,14 +102,14 @@ def client_terminal():
         print(receivedJSONTurn)
         if(receivedJSONTurn["action"] == "t" and receivedJSONTurn["status"] == 1):
             #Envio ataque
-            attackEntry = input("Ingrese comando 'attack - [x,y]': ").split("-")
+            attackEntry = input("Ingrese posicion de ataque 'x - y': ").split("-")
             JsonUSer = {
                 "action": "a",
-                "position": [int(attackEntry[1]), int(attackEntry[2])]
+                "position": [int(attackEntry[0]), int(attackEntry[1])]
             }
 
             message = json.dumps(JsonUSer).encode()
-            sock.sendto(message, server_address)
+            sock.send(message)
 
             #Recepcion de ataque
             data, address = sock.recvfrom(1024)
@@ -134,21 +142,31 @@ def client_terminal():
             print(receivedJSON)
             ##logica de ataques enemigos
             #
+            enemyBoard, acerto = board.attackEnemy(enemyBoard, receivedJSON["position"][0], receivedJSON["position"][1], receivedJSON["status"])
+            if(acerto):
+                print("Ataque exitoso")
+            else:
+                print("Ataque fallido")
+            board.print_board(enemyBoard)
             continue
+    sock.close()
+    exit()
 
 
 
 
     
-
+#main
+if __name__ == "__main__":
+    client_terminal()
 
 
     # receive a response from the server
-    data, address = sock.recvfrom(4096)
-    receivedJSON = json.loads(data)
-    print(receivedJSON)
+#    data, address = sock.recvfrom(4096)
+#    receivedJSON = json.loads(data)
+#    print(receivedJSON)
     
     #print(f'Received "{data.decode()}" from {address}')
 
     # close the socket
-    sock.close()
+#    sock.close()

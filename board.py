@@ -72,3 +72,23 @@ def build_game(dimensiones):
     print_board(board)
 
     return myShips, board
+
+def attacked(board, x, y):
+    if board[x][y] == 0:
+        board[x][y] = "*"
+        return board,False
+    elif board[x][y] == "O":
+        board[x][y] = "X"
+        return board,True
+    else:
+        return board,None
+    
+def attackEnemy(board, x, y, status):
+    if status == 0:
+        board[x][y] = "*"
+        return board,False
+    elif status == 1:
+        board[x][y] = "X"
+        return board,True
+    else:
+        return board,None

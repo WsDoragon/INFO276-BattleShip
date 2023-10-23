@@ -159,6 +159,9 @@ while(True):
     if jsonMessage["action"] == 'desconexion':
         msgFromServer = "Desconexion exitosa"
         servidor.jugadoresConectados.remove(address)
+        #Como eliminar un elemento de un diccionario
+        #del servidor.jugadoresConectados[address]
+        
         print(servidor.jugadoresConectados)
         UDPServerSocket.sendto(msgFromServer.encode(), address)
         break
