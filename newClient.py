@@ -2,6 +2,7 @@ import socket
 import json
 
 import board
+import bot
 
 jsonUser = {
     "action": "",
@@ -32,8 +33,8 @@ def client_terminal():
         sock.send(message)
 
         # receive a response from the server
-        data, address = sock.recv(1024)
-        receivedJSON = json.loads(data.decode())
+        data = sock.recv(1024).decode()
+        receivedJSON = json.loads(data)
         print(receivedJSON)
 
         
@@ -64,15 +65,15 @@ def client_terminal():
     #sock.send(message)
 
     # Configurar el timeout en 1 segundo
-    sock.settimeout(10)
+    #sock.settimeout(10)
 
     # Enviar un mensaje al servidor
     try:
         sock.send(message)
 
         # Esperar la respuesta del servidor
-        data, server = sock.recv(1024)
-        print('Received:', data.decode())
+        data = sock.recv(1024).decode()
+        print('Received:', data)
     except socket.timeout:
         # Si se produce un timeout, reintentar el envío del mensaje
         print('Timeout, reintentando...')
@@ -89,16 +90,17 @@ def client_terminal():
     sock.send(message)
 
     # receive a response from the server
-    data, address = sock.recvfrom(1024)
-    receivedJSON = json.loads(data.decode())
+    data = sock.recv(1024).decode()
+    receivedJSON = json.loads(data)
     print("Datos validados de build\n",receivedJSON, "\n")
 
     gaming = True
     enemyBoard = board.build_board(5)
+
     while (gaming):
         #Recepcion turno
-        data, address = sock.recvfrom(1024)
-        receivedJSONTurn = json.loads(data.decode())
+        data = sock.recv(1024).decode()
+        receivedJSONTurn = json.loads(data)
         print(receivedJSONTurn)
         if(receivedJSONTurn["action"] == "t" and receivedJSONTurn["status"] == 1):
             #Envio ataque
@@ -111,8 +113,8 @@ def client_terminal():
                 }
                 message = json.dumps(jsonUser).encode()
                 sock.send(message)
-                data, address = sock.recvfrom(1024)
-                receivedJSON = json.loads(data.decode())
+                data = sock.recv(1024).decode()
+                receivedJSON = json.loads(data)
                 if (receivedJSON["action"] == "d" and receivedJSON["status"] == 1):
                     print("Desconexion exitosa")
                     sock.close()
@@ -128,15 +130,15 @@ def client_terminal():
                 sock.send(message)
 
                 #Recepcion de ataque
-                data, address = sock.recvfrom(1024)
-                receivedJSON = json.loads(data.decode())
+                data= sock.recv(1024).decode()
+                receivedJSON = json.loads(data)
                 print(receivedJSON)
 
                 if(receivedJSON["action"] == "l" and receivedJSON["status"] == 1):
                     print("Perdiste")
                     gaming = False
                     continue
-                elif(receivedJSON["action"] == "l" and receivedJSON["status"] == 0):
+                elif(receivedJSON["action"] == "l" or receivedJSON["action"] == "w" and receivedJSON["status"] == 0):
                     print("Ganaste")
                     gaming = False
                     continue
@@ -153,18 +155,24 @@ def client_terminal():
         else:
             print("Esperando turno enemigo...")
             #recibir confirmacion ataque enemigo
-            data, address = sock.recvfrom(1024)
-            receivedJSON = json.loads(data.decode())
+            data= sock.recv(1024).decode()
+            receivedJSON = json.loads(data)
             print(receivedJSON)
-            ##logica de ataques enemigos
-            #
-            enemyBoard, acerto = board.attackEnemy(enemyBoard, receivedJSON["position"][0], receivedJSON["position"][1], receivedJSON["status"])
-            if(acerto):
-                print("Ataque exitoso")
+
+            if((receivedJSON["action"] == "l" and receivedJSON["status"] == 0) or (receivedJSON["action"] == "w" and receivedJSON["status"] == 1)):
+                    print("Ganaste")
+                    gaming = False
+                    continue
             else:
-                print("Ataque fallido")
-            board.print_board(enemyBoard)
-            continue
+                ##logica de ataques enemigos
+                #
+                enemyBoard, acerto = board.attackEnemy(enemyBoard, receivedJSON["position"][0], receivedJSON["position"][1], receivedJSON["status"])
+                if(acerto):
+                    print("Ataque exitoso")
+                else:
+                    print("Ataque fallido")
+                board.print_board(enemyBoard)
+                continue
     sock.close()
     exit()
 
