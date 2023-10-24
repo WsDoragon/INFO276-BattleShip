@@ -72,8 +72,8 @@ def client_terminal():
     sock.connect(server_address)
 
     #creacion de tablero
-    #user_ships, userBoard = board.build_game(5)
-    #print(user_ships)
+    user_ships, userBoard = board.build_game(5)
+    print(user_ships)
 
     # send a message to the server
     JsonUSer = {
@@ -143,7 +143,7 @@ def client_terminal():
     #Envio barcos
     JsonUSer = {
         "action": "b",
-        "ships": {'p': [0, 0, True], 'b': [0, 3, True], 's': [1, 2, True]}
+        "ships": user_ships
     }
 
     message = json.dumps(JsonUSer).encode()
