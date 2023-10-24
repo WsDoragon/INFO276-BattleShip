@@ -44,7 +44,7 @@ def botPlaying():
             data = bot1.sock.recv(1024)
             receivedJSON = json.loads(data.decode())
             print(receivedJSON)
-            if receivedJSON["action"] == "l" and receivedJSON["status"] == 1:
+            if (receivedJSON["action"] == "l" and receivedJSON["status"] == 1) or (receivedJSON["action"] == "w" and receivedJSON["status"] == 1):
                 #print("Ganaste")
                 break
             elif receivedJSON["action"] == "l" and receivedJSON["status"] == 0:
