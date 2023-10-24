@@ -4,7 +4,18 @@ class Jugador:
         #self.nombre = nombre
         self.ships = {}
         self.points = 6
+        self.turn = False
+        self.start = False
         self.opponent = None
+    
+    def setTurn(self, turn):
+        self.turn = turn
+
+    def changeTurn(self):
+        self.turn = not self.turn
+
+    def getTurn(self):
+        return self.turn
 
     def añadirBarco(self, posiciones):
         self.ships = posiciones
