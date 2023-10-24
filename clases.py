@@ -42,7 +42,8 @@ class Barcos:
                     self.casillas.append([barcos[tipo][0], barcos[tipo][1] + i])
                 
             else: #Vertical
-                self.casillas.append([barcos[tipo][0] + i, barcos[tipo][1]] for i in range(tamaños[tipo]))
+                for i in range(tamaños[tipo]):
+                    self.casillas.append([barcos[tipo][0] + i, barcos[tipo][1]])
         #print("----------------")
         #print (self.casillas)
     def recibirAtaque(self, posicion):
