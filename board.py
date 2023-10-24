@@ -34,7 +34,7 @@ def check_ship(board, x, y, ship, direction):
     if direction == "h":
         for i in range(ship):
             # validacion de que el barco no se salga del tablero
-            print (y+i, len(board[0]))
+            #print (y+i, len(board[0]))
             if y+i >= len(board[0]):
                 return True
             if board[x][y+i] == 1:
