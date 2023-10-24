@@ -102,6 +102,7 @@ while(True):
         if count == 2:
             time.sleep(2)
             for jugador in servidor.jugadoresConectados:
+                print("enviando turnos a: ", jugador)
                 serverJSON["action"] = "t"
                 serverJSON["status"] = servidor.jugadoresConectados[jugador].getTurn()
                 serverJSONsend = json.dumps(serverJSON)
@@ -153,6 +154,8 @@ while(True):
 
         if logro:
             print("Le diste a un barco")
+            print("atacado por: ", address)
+            print(servidor.jugadoresConectados[address_opponent].ships.casillas)
             if servidor.jugadoresConectados[address_opponent].ships.casillas == []:
                 print("Ganaste")
                 serverJSON["action"] = "l" #lost
