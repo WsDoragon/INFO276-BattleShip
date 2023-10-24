@@ -1,8 +1,61 @@
 import socket
 import json
+import random as rand
+import threading
+import time
 
-import board
-import bot
+import board as board
+import bot as bot
+
+def botPlaying():
+    bot1 = bot.bot("localhost", 20001)
+    bot1.connect()
+    print("Iniciando partida con bot...")
+    #time.sleep(1)
+    bot1.start()
+    #time.sleep(1)
+    bot1.build()
+    time.sleep(3)
+    bot1.sendBuild()
+    print("Setted ships")
+    while True:
+        data = bot1.sock.recv(1024)
+        receivedJSON = json.loads(data.decode())
+        #print(receivedJSON)
+        if receivedJSON["action"] == "t" and receivedJSON["status"] == 1:
+            x = rand.randint(0,4)
+            y = rand.randint(0,4)
+            jsonBot = {
+                "action": "a",
+                "position": [x,y]
+            }
+            bot1.sock.send(json.dumps(jsonBot).encode())
+            data = bot1.sock.recv(1024)
+            receivedJSON = json.loads(data.decode())
+            print(receivedJSON)
+            if receivedJSON["action"] == "l" and receivedJSON["status"] == 1:
+                #print("Ganaste")
+                break
+            elif receivedJSON["action"] == "l" and receivedJSON["status"] == 0:
+                #print("Perdiste")
+                break
+        else:
+            #print("Esperando turno enemigo...")
+            data = bot1.sock.recv(1024)
+            receivedJSON = json.loads(data.decode())
+            print(receivedJSON)
+            if receivedJSON["action"] == "l" and receivedJSON["status"] == 1:
+                #print("Ganaste")
+                break
+            elif receivedJSON["action"] == "l" and receivedJSON["status"] == 0:
+                #print("Perdiste")
+                break
+                    
+    bot1.sock.close()
+    exit()
+    
+
+
 
 jsonUser = {
     "action": "",
@@ -54,13 +107,20 @@ def client_terminal():
     
 
     # send a message to the server
-    startEntry = input("Ingrese comando 'start - [N°]' (1: bot - 0:User): ").split("-")
+    startEntry = input("Ingrese comando 'start - [N°]' (1: bot - 0:User): ").split(" - ")
     JsonUSer = {
         "action": "s",
         #En caso de tener 1 en el comando, se conecta con el bot en otro caso se pone un 0
-        "bot": startEntry[1]
+        "bot": int(startEntry[1])
     }
 
+    if (int(startEntry[1]) == 1):
+        print("Iniciando partida con bot...")
+        #Iniciar un thread para el bot
+        botThread = threading.Thread(target=botPlaying)
+        botThread.start()
+        time.sleep(2)
+    print("continuando...")
     message = json.dumps(JsonUSer).encode()
     #sock.send(message)
 
@@ -79,7 +139,7 @@ def client_terminal():
         print('Timeout, reintentando...')
         sock.send(message)
 
-    
+    time.sleep(1)
     #Envio barcos
     JsonUSer = {
         "action": "b",
@@ -96,7 +156,7 @@ def client_terminal():
 
     gaming = True
     enemyBoard = board.build_board(5)
-
+    print("COMENZANDO JUEGO")
     while (gaming):
         #Recepcion turno
         data = sock.recv(1024).decode()
