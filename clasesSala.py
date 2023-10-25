@@ -78,6 +78,9 @@ class Tablero:
 class Servidor:
     def __init__(self):
         self.jugadoresConectados = {}
+        self.jugadoresEsperando = {}
+        self.jugadoresBot = {}
+        self.jugadoresPartida = {}
         self.salas = {1:None, 2:None, 3:None, 4:None, 5:None, 6:None, 7:None, 8:None, 9:None, 10:None}
         self.maxSalas = 10
         self.notUsed = [1,2,3,4,5,6,7,8,9,10]
@@ -86,6 +89,15 @@ class Servidor:
         salaSelect = rand.choice(self.notUsed)
         self.notUsed.remove(salaSelect)
         self.salas[salaSelect] = Sala(salaSelect)
+
+    def addJugadorEspera(self, jugador):
+        self.jugadoresEsperando[jugador.address] = jugador
+
+    def addJugadorPartida(self, jugador):
+        self.jugadoresPartida[jugador.address] = jugador
+
+    def addJugadorBot(self, jugador):
+        self.jugadoresBot[jugador.address] = jugador
 
     def iniciarPartida(self):
         pass
