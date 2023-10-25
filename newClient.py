@@ -8,11 +8,12 @@ import board as board
 import bot as bot
 
 def botPlaying():
-    bot1 = bot.bot("", 20001)
+    bot1 = bot.bot("localhost", 20001)
     bot1.connect()
     print("Iniciando partida con bot...")
     #time.sleep(1)
     bot1.start()
+    print("Iniciando construccion de barcos...")
     #time.sleep(1)
     bot1.build()
     time.sleep(3)
@@ -23,6 +24,7 @@ def botPlaying():
         receivedJSON = json.loads(data.decode())
         #print(receivedJSON)
         if receivedJSON["action"] == "t" and receivedJSON["status"] == 1:
+            time.sleep(3)
             x = rand.randint(0,4)
             y = rand.randint(0,4)
             jsonBot = {
@@ -32,7 +34,7 @@ def botPlaying():
             bot1.sock.send(json.dumps(jsonBot).encode())
             data = bot1.sock.recv(1024)
             receivedJSON = json.loads(data.decode())
-            print(receivedJSON)
+            #print(receivedJSON)
             if receivedJSON["action"] == "l" and receivedJSON["status"] == 1:
                 #print("Ganaste")
                 break
@@ -43,7 +45,7 @@ def botPlaying():
             #print("Esperando turno enemigo...")
             data = bot1.sock.recv(1024)
             receivedJSON = json.loads(data.decode())
-            print(receivedJSON)
+            #print(receivedJSON)
             if (receivedJSON["action"] == "l" and receivedJSON["status"] == 1) or (receivedJSON["action"] == "w" and receivedJSON["status"] == 1):
                 #print("Ganaste")
                 break
@@ -69,11 +71,11 @@ def client_terminal():
 
     # define the server address and port
     #server_address = ('172.20.115.194', 20001)
-    server_address = ('172.17.34.159', 20001)
+    server_address = ('localhost', 20001)
     sock.connect(server_address)
 
     #creacion de tablero
-    #user_ships, userBoard = board.build_game(5)
+    user_ships, userBoard = board.build_game(5)
     #print(user_ships)
 
     # send a message to the server
@@ -92,7 +94,7 @@ def client_terminal():
         print(receivedJSON)
 
         
-
+        retries = 0
         if(receivedJSON["status"] == 0):
             retries += 1
             print("Conexion fallida reintentando...")
@@ -121,7 +123,7 @@ def client_terminal():
         botThread = threading.Thread(target=botPlaying)
         botThread.start()
         time.sleep(2)
-    print("continuando...")
+    #print("continuando...")
     message = json.dumps(JsonUSer).encode()
     #sock.send(message)
 
@@ -130,6 +132,7 @@ def client_terminal():
 
     # Enviar un mensaje al servidor
     try:
+        print("enviando start")
         sock.send(message)
 
         # Esperar la respuesta del servidor
@@ -144,11 +147,12 @@ def client_terminal():
     #Envio barcos
     JsonUSer = {
         "action": "b",
-        "ships": {'p': [0, 0, True], 'b': [0, 3, True], 's': [1, 2, True]}
+        #"ships": {'p': [0, 0, True], 'b': [0, 3, True], 's': [1, 2, True]}
+        "ships": user_ships
     }
 
     message = json.dumps(JsonUSer).encode()
-    sock.recv(1024).decode()
+    #sock.recv(1024).decode()
     sock.send(message)
 
     # receive a response from the server
@@ -208,11 +212,17 @@ def client_terminal():
                 elif(receivedJSON["action"] == "a" and receivedJSON["status"] == 1):
                     print("Ataque exitoso")
                     #logica de ataques acertados
-                    continue
+                    enemyBoard, acerto = board.attackEnemy(enemyBoard, receivedJSON["position"][0], receivedJSON["position"][1], receivedJSON["status"])
+
+                    
                 else:
                     print("Ataque fallido")
                     #logica de ataques fallados
-                    continue
+                    enemyBoard, acerto = board.attackEnemy(enemyBoard, receivedJSON["position"][0], receivedJSON["position"][1], receivedJSON["status"])
+
+                    
+                print("-----Ataque-----")
+                board.print_board(enemyBoard)
 
         else:
             print("Esperando turno enemigo...")
@@ -228,12 +238,14 @@ def client_terminal():
             else:
                 ##logica de ataques enemigos
                 #
-                enemyBoard, acerto = board.attackEnemy(enemyBoard, receivedJSON["position"][0], receivedJSON["position"][1], receivedJSON["status"])
+                userBoard, acerto = board.attacked(userBoard, receivedJSON["position"][0], receivedJSON["position"][1])
+                print("-----Ataque enemigo-----")
                 if(acerto):
                     print("Ataque exitoso")
                 else:
                     print("Ataque fallido")
-                board.print_board(enemyBoard)
+                
+                board.print_board(userBoard)
                 continue
     sock.close()
     exit()
