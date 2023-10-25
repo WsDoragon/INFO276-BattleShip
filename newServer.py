@@ -25,7 +25,7 @@ acciones = {
 
 shipTypes = ["p","b","s"]
 
-localIP = "127.0.0.1"
+localIP = "172.17.33.141"
 localPort = 20001
 bufferSize = 1024
 msgFromServer = "Hello UDP Client"
@@ -52,7 +52,7 @@ while(True):
     #Handle conexion de un usuario
     if (jsonMessage["action"] == 'c' and address not in servidor.jugadoresConectados and len(servidor.jugadoresConectados) < 2):
         msgFromServer = "Conexion exitosa"
-        serverJSON["action"] = "conexion"
+        serverJSON["action"] = "c"
         serverJSON["status"] = 1
         player = clases.Jugador(address)
         if len(servidor.jugadoresConectados) == 0:
@@ -68,7 +68,7 @@ while(True):
 
     elif(jsonMessage["action"] == 'c' and address not in servidor.jugadoresConectados  and len(servidor.jugadoresConectados) >= 2):
         msgFromServer = "Conexion fallida"
-        serverJSON["action"] = "conexion"
+        serverJSON["action"] = "c"
         serverJSON["status"] = 0
         serverJSONsend = json.dumps(serverJSON)
         UDPServerSocket.sendto(serverJSONsend.encode(), address)
@@ -77,7 +77,7 @@ while(True):
     #Build de tablero
     if jsonMessage["action"] == 'b':
         msgFromServer = "Tablero construido"
-        serverJSON["action"] = "build"
+        serverJSON["action"] = "b"
         serverJSON["status"] = 1
         naves = jsonMessage["ships"]
         mis_naves = clases.Barcos(naves)
@@ -112,7 +112,7 @@ while(True):
         #Start de partida
     if jsonMessage["action"] == "s" and len(servidor.jugadoresConectados) == 2:
         msgFromServer = "Partida iniciada"
-        serverJSON["action"] = "start"
+        serverJSON["action"] = "s"
         serverJSON["status"] = 1
         serverJSONsend = json.dumps(serverJSON).encode()
         servidor.jugadoresConectados[address].start = True
@@ -128,6 +128,7 @@ while(True):
                 print("sending to: ",jugador)
            #print (servidor.jugadoresConectados[jugador].opponent)
 
+    
     elif(jsonMessage["action"] == "s" and len(servidor.jugadoresConectados) < 2):
         msgFromServer = "Partida no iniciada"
         serverJSON["action"] = "start"
@@ -137,11 +138,12 @@ while(True):
 
         UDPServerSocket.sendto(serverJSONsend.encode(), address)
         continue
+    
 
         #Ataque de un usuario
     if jsonMessage["action"] == 'a':
         msgFromServer = "Ataque realizado"
-        serverJSON["action"] = "attack"
+        serverJSON["action"] = "a"
         serverJSON["status"] = 1
         serverJSON["position"] = jsonMessage["position"]
 

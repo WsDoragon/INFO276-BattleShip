@@ -8,7 +8,7 @@ import board as board
 import bot as bot
 
 def botPlaying():
-    bot1 = bot.bot("localhost", 20001)
+    bot1 = bot.bot("", 20001)
     bot1.connect()
     print("Iniciando partida con bot...")
     #time.sleep(1)
@@ -68,12 +68,13 @@ def client_terminal():
     retrys = 0
 
     # define the server address and port
-    server_address = ('localhost', 20001)
+    #server_address = ('172.20.115.194', 20001)
+    server_address = ('172.17.34.159', 20001)
     sock.connect(server_address)
 
     #creacion de tablero
-    user_ships, userBoard = board.build_game(5)
-    print(user_ships)
+    #user_ships, userBoard = board.build_game(5)
+    #print(user_ships)
 
     # send a message to the server
     JsonUSer = {
@@ -143,10 +144,11 @@ def client_terminal():
     #Envio barcos
     JsonUSer = {
         "action": "b",
-        "ships": user_ships
+        "ships": {'p': [0, 0, True], 'b': [0, 3, True], 's': [1, 2, True]}
     }
 
     message = json.dumps(JsonUSer).encode()
+    sock.recv(1024).decode()
     sock.send(message)
 
     # receive a response from the server
