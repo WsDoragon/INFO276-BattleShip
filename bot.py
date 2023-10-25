@@ -23,7 +23,7 @@ class bot():
         self.sock.send(json.dumps(jsonBot).encode())
         data = self.sock.recv(1024)
         receivedJSON = json.loads(data.decode())
-        print("bot: ",receivedJSON)
+        #print("bot: ",receivedJSON)
 
     def build(self):
         board =  bd.build_board(5)
@@ -52,12 +52,12 @@ class bot():
     def start(self):
         jsonBot = {
             "action": "s",
-            "bot": "1"
+            "bot": 1
         }
         self.sock.send(json.dumps(jsonBot).encode())
         data = self.sock.recv(1024)
         receivedJSON = json.loads(data.decode())
-        print("bot: ",receivedJSON)
+        #print("bot: ",receivedJSON)
 
     def sendBuild(self):
         jsonBot = {
@@ -65,12 +65,12 @@ class bot():
             "ships": {'p': [0, 0, True], 'b': [0, 3, True], 's': [1, 2, True]}
         }
         self.sock.send(json.dumps(jsonBot).encode())
-        print("bot: Enviado ships" , self.botShips)
+        #print("bot: Enviado ships" , self.botShips)
         data = self.sock.recv(1024)
-        print("bot: recibido ships")
+        #print("bot: recibido ships")
         receivedJSON = json.loads(data.decode())
         self.gaming = True
-        print("bot: ",receivedJSON)
+        #print("bot: ",receivedJSON)
 
     def attack(self):
         x = rand.randint(0,4)
