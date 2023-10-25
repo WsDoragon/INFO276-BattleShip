@@ -210,6 +210,14 @@ while(True):
                 serverJSON["status"] = 1
                 serverJSONsend = json.dumps(serverJSON)
                 UDPServerSocket.sendto(serverJSONsend.encode(), servidor.jugadoresPartida[address].opponent)
+                
+                #desconexion de jugadores y eliminacion de partida
+                del servidor.jugadoresConectados[address_opponent]
+                del servidor.jugadoresPartida[address_opponent]
+                print(servidor.jugadoresConectados)
+                del servidor.jugadoresConectados[address]
+                del servidor.jugadoresPartida[address]
+
                 break
             else:
                 serverJSON["action"] = "a"
